@@ -34,10 +34,14 @@ public struct EmojiText: View {
     
     @State private var preRendered: String?
     @State private var renderedEmojis = [String: RenderedEmoji]()
+    @State private var loadedHashValue: Int?
     
     public var body: some View {
         rendered
             .task(id: hashValue) {
+                guard hashValue != loadedHashValue else {
+                    return
+                }
                 guard !emojis.isEmpty else {
                     self.renderedEmojis = [:]
                     return
@@ -48,6 +52,8 @@ public struct EmojiText: View {
                 
                 // Load actual emojis
                 self.renderedEmojis = await loadEmojis()
+
+                loadedHashValue = hashValue
             }
             .onChange(of: renderedEmojis) { emojis in
                 self.preRendered = preRender(with: emojis)
